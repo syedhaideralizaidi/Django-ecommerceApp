@@ -1,0 +1,102 @@
+django-admin startproject ecommerce
+    cd ecommerce
+
+python manage.py startapp store
+
+
+//IN views.py
+def store(request):
+context={}
+return render(request,'store/store.html',context)
+
+
+//To add CSS and Images make a folder static in root dir and make two folders 'css' and 'images'
+
+//make templates inside your app 'store' and make a templates folder and inside it make another folder with same name 'store' and write your html files there
+
+
+
+//To configure html files
+{% load static %}  (This will load your static files folders)
+
+//To inherit the content and override with parent we can use this code
+-Parent
+<div class="container">
+        {% block content %}
+        {% endblock content %}
+    </div>
+
+-Child
+{% extends 'store/main.html' %}
+{% load static %}
+{% block content %}
+    <h3>Store</h3>
+{% endblock content %}
+
+
+//To add css to all your project you can add this simply to your main.html which is inherited everywhere
+<link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+
+
+//Redirect a button to a page
+<a class="navbar-brand" href="{% url 'store' %}">Ecom</a>
+
+
+//django.contrib.auth.models.User model is a built-in model provided by Django's authentication framework
+It is used for User Authentication,Registration,Authorization
+In models.py of your app 'store'
+class Customer(models.Model) :
+    user = models.OneToOneField(User , on_delete = models.CASCADE , null = True , blank = True)
+    name = models.CharField(max_length = 200 , null = True)
+    email = models.CharField(max_length = 200 , null = True)
+    def __str__(self) :
+        return self.name
+python manage.py makemigrations
+python manage.py migrate
+
+//Add objects to admin panel
+admin.site.register(Customer) like this add all after importing
+
+
+//Now after registering make a superuser and interact with database admin panel of django
+python manage.py createsuperuser
+now run the server and access panel
+
+//add the products in database
+
+//Now to render these products go to views.py and import models in it
+in your html
+{% for product in products %}
+{{product.name}} //render the name
+{{product.price|floatformat:2}} //upto 2 decimal places
+{% endfor %}
+
+in views.py
+def store(request) :
+    products= Product.objects.all()
+    context = {'products':products}
+    return render(request , 'store/store.html' , context)
+
+
+
+//To add images you need to install pillow and add imagefield in models.py. After adding make migrations and then go to settings and add media_root and give the path of 'static/images' folder
+Now upload the images and it will get added in your images folder
+Also add MEDIA_URL to '/images/' in settings
+in your html file set it to {{product.imageURL}} and in your models.py file go to your product and add this code
+@property
+    def imageURL(self):
+        try:
+            url= self.image.url
+        except:
+            url = ''
+        return url
+
+
+//now adding the customer and cart settings
+if request.user.is_authenticated:
+    customer= request.user.customer
+    order,created = Order.objects.get_or_create(customer=customer, complete= False)
+    items= order.orderitem_set.all()
+else:
+    items=[]
+context={'items':items}

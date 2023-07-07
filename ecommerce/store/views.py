@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.http import JsonResponse
+from django.conf import settings
 import json
 import os
 
@@ -20,7 +21,8 @@ def store(request):
         cartItems = order["get_cart_items"]
     products = Product.objects.all()
     context = {"products": products, "cartItems": cartItems}
-    return render(request, "store/store.html", context)
+    print("The path is: " , os.path.join(settings.BASE_DIR , "templates/store/checkout.html"))
+    return render(request, os.path.join(settings.BASE_DIR, "templates/store/store.html"), context)
 
 
 def cart(request):
@@ -34,7 +36,7 @@ def cart(request):
         order = {"get_cart_total": 0, "get_cart_items": 0, "shipping": False}
         cartItems = order["get_cart_items"]
     context = {"items": items, "order": order, "cartItems": cartItems}
-    return render(request, "store/cart.html", context)
+    return render(request, os.path.join(settings.BASE_DIR, "templates/store/cart.html"), context)
 
 
 def checkout(request):
@@ -48,7 +50,8 @@ def checkout(request):
         order = {"get_cart_total": 0, "get_cart_items": 0, "shipping": False}
         cartItems = order["get_cart_items"]
     context = {"items": items, "order": order, "cartItems": cartItems}
-    return render(request, "store/checkout.html", context)
+
+    return render(request, os.path.join(settings.BASE_DIR, "templates/store/checkout.html"), context)
 
 
 def updateItem(request):

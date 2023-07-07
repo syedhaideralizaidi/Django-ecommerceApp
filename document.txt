@@ -100,3 +100,7 @@ if request.user.is_authenticated:
 else:
     items=[]
 context={'items':items}
+
+//one big error resolved that I was getting error for template doesn;t exist and i didnt add it in settings.py file in Templates i added this
+'DIRS': [os.path.join(BASE_DIR, 'templates', 'store')],
+I resolved it

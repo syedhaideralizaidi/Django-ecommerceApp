@@ -1,24 +1,32 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 
-# Create your models here.
+class TimestampModel(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        abstract = True
 
 
-class Customer(models.Model):
+class Customer(TimestampModel):
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
     name = models.CharField(max_length=200, null=True)
     email = models.CharField(max_length=200, null=True)
+    created_at = models.DateTimeField(default = timezone.now)
 
     def __str__(self):
         return self.name
 
 
-class Product(models.Model):
+class Product(TimestampModel):
     name = models.CharField(max_length=200, null=True)
     price = models.FloatField()
     digital = models.BooleanField(default=False, null=True, blank=False)
     image = models.ImageField(null=True, blank=True)
+    created_at = models.DateTimeField(default = timezone.now)
 
     def __str__(self):
         return self.name
@@ -32,13 +40,14 @@ class Product(models.Model):
         return url
 
 
-class Order(models.Model):
+class Order(TimestampModel):
     customer = models.ForeignKey(
         Customer, on_delete=models.SET_NULL, null=True, blank=True
     )
     date_ordered = models.DateTimeField(auto_now_add=True)
     complete = models.BooleanField(default=False, null=True, blank=False)
     transaction_id = models.CharField(max_length=200, null=True)
+    created_at = models.DateTimeField(default = timezone.now)
 
     def __str__(self):
         return str(self.id)
@@ -65,13 +74,14 @@ class Order(models.Model):
             return shipping
 
 
-class OrderItem(models.Model):
+class OrderItem(TimestampModel):
     product = models.ForeignKey(
         Product, on_delete=models.SET_NULL, null=True, blank=True
     )
     order = models.ForeignKey(Order, on_delete=models.SET_NULL, null=True, blank=True)
     date_added = models.DateTimeField(auto_now_add=True)
     quantity = models.IntegerField(default=0, null=True, blank=True)
+    created_at = models.DateTimeField(default = timezone.now)
 
     @property
     def get_total(self):
@@ -79,7 +89,7 @@ class OrderItem(models.Model):
         return total
 
 
-class ShippingAddress(models.Model):
+class ShippingAddress(TimestampModel):
     product = models.ForeignKey(
         Product, on_delete=models.SET_NULL, null=True, blank=True
     )
@@ -89,6 +99,7 @@ class ShippingAddress(models.Model):
     state = models.CharField(max_length=200, null=True)
     zipcode = models.CharField(max_length=200, null=True)
     date_added = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(default = timezone.now)
 
     def __str__(self):
         return self.address

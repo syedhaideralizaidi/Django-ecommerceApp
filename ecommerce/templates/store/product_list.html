@@ -1,0 +1,14 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<hr>
+  <h1>Product List</h1>
+
+  <ol>
+    {% for product in products %}
+      <li>{{ product.name }} - {{ product.price }}</li>
+    {% empty %}
+      <li>No products available.</li>
+    {% endfor %}
+  </ol>
+{% endblock %}

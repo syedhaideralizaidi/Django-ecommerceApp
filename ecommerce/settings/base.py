@@ -1,4 +1,3 @@
-from decouple import config
 import os
 
 SECRET_KEY = "django-insecure-2y!qbi4g^x88l_fdvmh%g3(i-o3^+7#k=ps@v_1%+l@m9bktwh"

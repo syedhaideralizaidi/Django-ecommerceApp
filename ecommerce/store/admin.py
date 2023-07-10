@@ -16,7 +16,7 @@ from .models import Customer, Product, Order, OrderItem, ShippingAddress
 
 
 class TimestampedModelAdmin(admin.ModelAdmin):
-    readonly_fields = ('created_at', 'updated_at')
+    readonly_fields = ("created_at", "updated_at")
 
 
 @admin.register(Customer)

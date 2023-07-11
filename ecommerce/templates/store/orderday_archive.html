@@ -1,0 +1,12 @@
+{% extends "main.html" %}
+
+{% block content %}
+  <h1>Archive: {{ year }}</h1>
+  <ul>
+    {% for object in object_list %}
+      <li>{{ object }}</li>
+    {% empty %}
+      <li>No items found.</li>
+    {% endfor %}
+  </ul>
+{% endblock %}

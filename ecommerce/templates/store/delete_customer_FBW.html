@@ -1,0 +1,11 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<hr>
+    <h1>Delete Customer</h1>
+    <p>Are you sure you want to delete the customer '{{ customer.name }}'?</p>
+    <form method="POST" action="{% url 'deletecreate_FBW' customer.name %}">
+        {% csrf_token %}
+        <button type="submit">Delete Customer</button>
+    </form>
+{% endblock %}

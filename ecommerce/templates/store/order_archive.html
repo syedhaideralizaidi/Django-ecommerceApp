@@ -1,0 +1,31 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<hr>
+  <h1>Order Archive</h1>
+
+  {% for date in date_list %}
+    <h3>{{ date }}</h3>
+    <ul>
+      {% for item in object_list %}
+        {% if item.date_ordered|date:"Y-m-d" == date %}
+          <li>{{ item }}</li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+  {% empty %}
+    <p>No orders available.</p>
+  {% endfor %}
+
+  {% if is_paginated %}
+    <div class="pagination">
+      {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+      {% endif %}
+      <span class="current-page">{{ page_obj.number }}</span>
+      {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}">next</a>
+      {% endif %}
+    </div>
+  {% endif %}
+{% endblock %}

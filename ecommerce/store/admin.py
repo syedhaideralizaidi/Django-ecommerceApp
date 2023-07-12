@@ -3,27 +3,29 @@ from .models import Customer, Product, Order, OrderItem, ShippingAddress
 
 
 class TimestampedModelAdmin(admin.ModelAdmin):
-    readonly_fields = ("created_at", "updated_at")
+    readonly_fields=("created_by",)
+    exclude = ("created_at" , "updated_at")
 
 
 @admin.register(Customer)
 class CustomerAdmin(TimestampedModelAdmin):
-    pass
+    list_display = ("name","email","order_by_many")
+    # list_display_links = ("name","email")
 
 
 @admin.register(Product)
 class ProductAdmin(TimestampedModelAdmin):
-    pass
+    list_display = ("name","price","digital")
 
 
 @admin.register(Order)
 class OrderAdmin(TimestampedModelAdmin):
-    pass
+    list_display = ("transaction_id","date_ordered" , "complete")
 
 
 @admin.register(OrderItem)
 class OrderItemAdmin(TimestampedModelAdmin):
-    pass
+    list_display = ("quantity","date_added" , "order")
 
 
 @admin.register(ShippingAddress)

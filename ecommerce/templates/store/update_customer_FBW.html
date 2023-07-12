@@ -3,7 +3,7 @@
 {% block content %}
 <hr>
     <h1>Update Customer</h1>
-<form method="POST" action="{% url 'customerupdate_FBW' customer.name %}">
+<form method="GET" action="{% url 'customerupdate_FBW' customer.name %}">
         {% csrf_token %}
         {{ form.as_p }}
         <button type="submit">Update Customer</button>

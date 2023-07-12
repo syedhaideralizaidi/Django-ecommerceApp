@@ -5,4 +5,6 @@
   <p>Price: {{ product.price }}</p>
   <p>Created_at: {{ product.created_at }}</p>
   <p>Digital: {{ product.digital }}</p>
+
+  <button> <a href="{% url 'product_update' product.name %}">Update Product</a></button>
 {% endblock %}

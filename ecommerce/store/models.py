@@ -6,6 +6,7 @@ from django.utils import timezone
 class TimestampModel(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='%(class)s_created_by')
 
     class Meta:
         abstract = True
@@ -15,9 +16,14 @@ class Customer(TimestampModel):
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
     name = models.CharField(max_length=200, null=True)
     email = models.CharField(max_length=200, null=True)
-
+    orders = models.ManyToManyField('Order', blank=True, related_name = '%(class)s_orders')
     def __str__(self):
         return self.name
+
+    def order_by_many(self):
+        #return ",".join([str(o) for o in User.objects.all()])
+        return self.user
+
 
 
 class Product(TimestampModel):
@@ -47,7 +53,7 @@ class Order(TimestampModel):
     transaction_id = models.CharField(max_length=200, null=True)
 
     def __str__(self):
-        return str(self.id)
+        return str(self.complete)
 
     @property
     def get_cart_total(self):
@@ -84,6 +90,8 @@ class OrderItem(TimestampModel):
         total = self.product.price * self.quantity
         return total
 
+    def __str__(self) :
+        return self.quantity
 
 class ShippingAddress(TimestampModel):
     product = models.ForeignKey(

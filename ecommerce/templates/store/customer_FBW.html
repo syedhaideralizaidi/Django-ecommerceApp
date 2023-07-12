@@ -1,27 +1,19 @@
 {% extends 'main.html' %}
 
 {% block content %}
-<hr>
-{% if customer %}
-    <h1>Update Customer</h1>
-{% else %}
-    <h1>Create Customer</h1>
-{% endif %}
+<h1>Customer</h1>
 
-<form method="POST" action="/customer/">
-    {% csrf_token %}
-    <div class="form-group">
-        <label for="name">Name</label>
-        <input type="text" class="form-control" id="name" name="name" value="{{ customer.name }}">
-    </div>
-    <div class="form-group">
-        <label for="email">Email</label>
-        <input type="email" class="form-control" id="email" name="email" value="{{ customer.email }}">
-    </div>
-    {% if customer %}
-        <button type="submit" class="btn btn-primary">Update Customer</button>
-    {% else %}
-        <button type="submit" class="btn btn-primary">Create Customer</button>
-    {% endif %}
+<form action="" method="post">
+{% csrf_token %}
+  <div class="form-group">
+    <label for="name">Name</label>
+    <input type="text" class="form-control" id="name" name="name" value="{{ customer.name }}">
+  </div>
+  <div class="form-group">
+    <label for="email">Email</label>
+    <input type="email" class="form-control" id="email" name="email" value="{{ customer.email }}">
+  </div>
+  <button type="submit" class="btn btn-primary">Submit</button>
 </form>
+
 {% endblock %}

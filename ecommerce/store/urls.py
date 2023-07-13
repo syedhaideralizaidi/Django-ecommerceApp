@@ -1,11 +1,11 @@
-from django.urls import path,include
+from django.urls import path, include
 from . import views
 from django.contrib.auth import admin
 
 
 urlpatterns = [
-    path("login/",views.login_user, name="login"),
-    path("logout/" , views.logout_user , name = "logout") ,
+    path("login/", views.login_user, name="login"),
+    path("logout/", views.logout_user, name="logout"),
     path("", views.StoreView.as_view(), name="store"),
     path("cart/", views.CartView.as_view(), name="cart"),
     path("checkout/", views.CheckoutView.as_view(), name="checkout"),
@@ -47,5 +47,16 @@ urlpatterns = [
         "customer_/<str:name>/delete",
         views.CustomerDeleteView.as_view(),
         name="customer_delete",
+    ),
+    path("checkc_", views.CheckView.as_view(), name="checkcustomer"),
+    path(
+        "checkc_/<int:id>/update",
+        views.CheckView.as_view(),
+        name="checkcustomer_update",
+    ),
+    path(
+        "checkc_/<str:name>/delete",
+        views.CheckView.as_view(),
+        name="checkcustomer_update",
     ),
 ]

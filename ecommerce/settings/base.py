@@ -9,13 +9,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 INSTALLED_APPS = [
+    "store",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "store",
+    "admin_reorder",
 ]
 
 MIDDLEWARE = [
@@ -26,8 +27,38 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "admin_reorder.middleware.ModelAdminReorder",
 ]
 
+
+ADMIN_REORDER = (
+    # Keep original label and models
+    #'store',
+    # Reorder app models
+    {
+        "app": "store",
+        "models": (
+            "store.Customer",
+            "store.Order",
+            "store.Product",
+            "store.OrderItem",
+            "store.ShippingAddress",
+            "store.CustomerOrderHistory",
+            "store.ProxyCustomer",
+        ),
+    },
+    # Rename app
+    {"app": "auth", "label": "Authorize"},
+    # Exclude models
+    # {'app': 'auth', 'models': ('auth.User', )},
+    # # Cross-linked models
+    # {'app': 'auth', 'models': ('auth.User', 'sites.Site')},
+    # models with custom name
+    # {'app': 'auth', 'models': (
+    #     'auth.Group',
+    #     {'model': 'auth.User', 'label': 'Staff'},
+    # )},
+)
 ROOT_URLCONF = "ecommerce.urls"
 
 TEMPLATES = [

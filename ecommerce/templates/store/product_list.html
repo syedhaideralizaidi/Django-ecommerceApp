@@ -4,13 +4,13 @@
 <hr>
   <h1>Product List</h1>
 
-  <ol>
+  <ol class="list-group">
     {% for product in products %}
-      <li>{{ product.name }} - {{ product.price }}</li>
+      <li class="list-group-item">{{ product.name }} --- {{ product.price }}</li>
     {% empty %}
-      <li>No products available.</li>
+      <li class="list-group-item">No products available.</li>
     {% endfor %}
   </ol>
-
+<hr>
   <button><a href="{% url 'store' %}">Change the Product</a></button>
 {% endblock %}

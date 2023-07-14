@@ -1,0 +1,19 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<hr>
+  <h1>Customer List</h1>
+
+  <ol>
+    {% for customer in customers %}
+      <li>{{ customer.name }} - {{ customer.email }}
+      <button><a href="{% url 'checkcustomer_update' customer.name %}">Update</a></button>
+      </li>
+    {% empty %}
+      <li>No customers available.</li>
+    {% endfor %}
+  </ol>
+
+  <button><a href="{% url 'store' %}">Change the Customer</a></button>
+
+{% endblock %}

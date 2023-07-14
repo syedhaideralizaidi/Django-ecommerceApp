@@ -1,7 +1,6 @@
-from django.urls import path, include
-from . import views
-from django.contrib.auth import admin
+from django.urls import path
 
+from . import views
 
 urlpatterns = [
     path("login/", views.login_user, name="login"),
@@ -48,14 +47,14 @@ urlpatterns = [
         views.CustomerDeleteView.as_view(),
         name="customer_delete",
     ),
-    path("checkc_", views.CheckView.as_view(), name="checkcustomer"),
+    path("checkc_/create", views.CheckView.as_view(), name="create_customer"),
     path(
-        "checkc_/<int:id>/update",
+        "checkc_/<slug:slug>",
         views.CheckView.as_view(),
-        name="checkcustomer_update",
+        name="customer_list",
     ),
     path(
-        "checkc_/<str:name>/delete",
+        "checkc_/<str:name>",
         views.CheckView.as_view(),
         name="checkcustomer_update",
     ),

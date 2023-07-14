@@ -1,34 +1,36 @@
-from django.forms import ModelForm
-from django.http import (
-    JsonResponse,
-    HttpResponseNotFound,
-    HttpResponseBadRequest,
-    HttpResponse,
-)
-from django.contrib.auth import authenticate, login, logout
-from django.contrib import messages
-from django.conf import settings
-from django.template import loader
-from django.views import View
 import json
 import os
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect, get_object_or_404
-from .models import *
-from django.views.generic import (
-    CreateView,
-    UpdateView,
-    DeleteView,
-    ListView,
-    TemplateView,
-    RedirectView,
-    ArchiveIndexView,
-    YearArchiveView,
-    DetailView,
-    FormView,
-    GenericViewError,
-)
+
+from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth import authenticate , logout
 from django.contrib.auth import login
+from django.contrib.auth.decorators import login_required
+from django.forms import ModelForm
+from django.http import (
+    JsonResponse ,
+    HttpResponseBadRequest ,
+    HttpResponse ,
+)
+from django.shortcuts import render , redirect , get_object_or_404
+from django.template import loader
+from django.urls import reverse
+from django.views import View
+from django.views.generic import (
+    CreateView ,
+    UpdateView ,
+    DeleteView ,
+    ListView ,
+    TemplateView ,
+    RedirectView ,
+    ArchiveIndexView ,
+    YearArchiveView ,
+    DetailView ,
+    FormView ,
+    GenericViewError ,
+)
+
+from .models import *
 
 
 class CustomerForm(ModelForm):
@@ -234,7 +236,7 @@ class CustomerDeleteView(DeleteView):
     template_name = os.path.join(
         settings.BASE_DIR, "templates/store/customer_delete.html"
     )
-    success_url = "/cart"
+    success_url = "/"
 
     def get_object(self, queryset=None):
         try:
@@ -279,6 +281,7 @@ class CustomerUpdateView(UpdateView):
         return f"/customer_/{customer_name}/delete"
 
 
+@csrf_exempt
 class CustomerView(CreateView, ListView, UpdateView):
     model = Customer
     fields = ["name", "email"]
@@ -289,7 +292,7 @@ class CustomerView(CreateView, ListView, UpdateView):
         return f"customer_/{customer_name}"
 
 
-class CheckView(CreateView):
+class CheckView(ListView):
     model = Customer
     fields = ["name", "email"]
 
@@ -298,15 +301,17 @@ class CheckView(CreateView):
         self.success_url = self.get_success_url()
         return super().get(request, *args, **kwargs)
 
+    def get_context_object_name(self, obj):
+        obj = "customers"
+        return obj
+
     def get_template_names(self):
-        if self.object:
-            return [
-                os.path.join(settings.BASE_DIR, "templates/store/update_customer.html")
-            ]
-        else:
-            return [
-                os.path.join(settings.BASE_DIR, "templates/store/customer_create.html")
-            ]
+        # if not self.object:
+        #     return [
+        #         os.path.join(settings.BASE_DIR, "templates/store/customer_create.html")
+        #     ]
+        # else:
+        return [os.path.join(settings.BASE_DIR, "templates/store/customer_list.html")]
 
     def get_form_valid(self, form):
         form.instance.created_by = self.request.user
@@ -315,7 +320,8 @@ class CheckView(CreateView):
     def get_success_url(self):
         try:
             customer_id = self.object.pk
-            return f"checkc_/{customer_id}/update"
+            # return f"checkc_/{customer_id}/update"
+            return reverse("update_customer", kwargs={"pk": customer_id})
         except Exception as e:
             template = loader.get_template(
                 os.path.join(settings.BASE_DIR, "templates/store/invalid_action.html")
@@ -379,6 +385,14 @@ class ProductListView(GenericViewError, ListView):
     model = Product
     template_name = os.path.join(settings.BASE_DIR, "templates/store/product_list.html")
     context_object_name = "products"
+
+
+class CustomerListView(ListView):
+    model = Customer
+    template_name = os.path.join(
+        settings.BASE_DIR, "templates/store/customer_list.html"
+    )
+    context_object_name = "customers"
 
 
 class ProductUpdateView(UpdateView):

@@ -1,8 +1,7 @@
-from django.db import models
 from django.contrib.auth.models import User
-from django.db.models.signals import m2m_changed
-from django.dispatch import receiver
 from django.utils import timezone
+
+from .managers import *
 
 users = User.objects.all()
 
@@ -24,23 +23,28 @@ class TimestampModel(models.Model):
 
 
 class Customer(TimestampModel):
-    class Gender(models.TextField):
-        MALE = "ML", "Male"
-        FEMALE = "FL", "Female"
+    gender_choices = [
+        ("MALE", "Male"),
+        ("FEMALE", "Female"),
+    ]
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
     name = models.CharField(max_length=200, null=True)
     email = models.CharField(max_length=200, null=True)
-    gender = models.CharField(
-        max_length=50, choices=[Gender.MALE, Gender.FEMALE], default=Gender.MALE
-    )
+    gender = models.CharField(max_length=50, choices=gender_choices, default="Male")
     orders = models.ManyToManyField(
-        "Order", blank=True, related_name="%(class)s_orders"
+        "Order", through="CustomerOrderHistory", related_name="orders_in_customer"
     )
 
-    # def get_absolute_url(self) :
-    #     return reverse("checkc_" , kwargs = {"slug" : self.slug})
+    def get_customer_order_first_timehistory(self):
+        current_customer = Customer.objects.filter(self).first()
+        orders_customer_list = list(current_customer.orders.all())
+        history_order_list = []
+        for each_order in orders_customer_list:
+            history_order_list.append(each_order.order_in_customer_order_history.get().customer_order_created_at)
 
+        return history_order_list
+        #return orders_customer_list.order_in_customer_order_history.get().customer_order_created_at
     def __str__(self):
         return self.name
 
@@ -49,11 +53,22 @@ class Customer(TimestampModel):
         return self.user
 
 
+class ProxyCustomer(Customer):
+    customers = CustomerManager()
+
+    class Meta:
+        proxy = True
+        ordering = ["name"]
+
+
 class Product(TimestampModel):
     name = models.CharField(max_length=200, null=True)
     price = models.FloatField()
     digital = models.BooleanField(default=False, null=True, blank=False)
     image = models.ImageField(null=True, blank=True)
+
+    objects = models.Manager()
+    products = ProductManager()
 
     def __str__(self):
         return self.name
@@ -69,14 +84,42 @@ class Product(TimestampModel):
 
 class Order(TimestampModel):
     customer = models.ForeignKey(
-        Customer, on_delete=models.SET_NULL, null=True, blank=True
+        Customer,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="customer_in_order",
     )
     date_ordered = models.DateTimeField(auto_now_add=True)
     complete = models.BooleanField(default=False, null=True, blank=False)
     transaction_id = models.CharField(max_length=200, null=True)
+    products = models.ForeignKey(
+        Product,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=False,
+        related_name="product_in_order",
+    )
+    created_by = users[0]
+
+    objects = models.Manager()
+    orders = OrderManager()
+
+    def get_customer_order_created_at(self):
+        customer_order_history = CustomerOrderHistory.objects.filter(order=self).first()
+        if customer_order_history is not None:
+            return customer_order_history.customer_order_created_at
+        else:
+            return None
 
     def __str__(self):
-        return str(self.complete)
+        return str(self.transaction_id)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.request = kwargs.get("request", None)
+        if self.request:
+            self.created_by = self.request.user
 
     @property
     def get_cart_total(self):
@@ -134,18 +177,6 @@ class ShippingAddress(TimestampModel):
 
 class CustomerOrderHistory(TimestampModel):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
-    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name = "order_in_customer_order_history")
 
-    def __str__(self):
-        return f"{self.customer} placed order {self.order} on {self.created_at}"
-
-
-@receiver(m2m_changed, sender=Customer.orders.through)
-def create_customer_order_history(
-    sender, instance, action, reverse, model, pk_set, **kwargs
-):
-    if action == "post_add" and not reverse and model == Order:
-        for order_id in pk_set:
-            history = CustomerOrderHistory.objects.create(
-                customer=instance, order_id=order_id, created_by=instance.user
-            )
+    customer_order_created_at = models.DateTimeField(auto_now_add=True)

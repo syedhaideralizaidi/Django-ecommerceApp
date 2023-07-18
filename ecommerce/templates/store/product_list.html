@@ -3,10 +3,9 @@
 {% block content %}
 <hr>
   <h1>Product List</h1>
-
   <ol class="list-group">
     {% for product in products %}
-      <li class="list-group-item">{{ product.name }} --- {{ product.price }}</li>
+      <li class="list-group-item">{{ product.name }} --- {{ product.price | floatformat:2 }} ---- {{ product.created_at|date:'Y-m-d H:i:s'}} -----------{{ five_hours_from_now }}</li>
     {% empty %}
       <li class="list-group-item">No products available.</li>
     {% endfor %}

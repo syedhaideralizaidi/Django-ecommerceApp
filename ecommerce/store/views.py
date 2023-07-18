@@ -1,5 +1,6 @@
 import json
 import os
+from datetime import timedelta , datetime
 
 from django.conf import settings
 from django.contrib import messages
@@ -158,7 +159,7 @@ class StoreView(View):
             order = {"get_cart_total": 0, "get_cart_items": 0, "shipping": False}
             cartItems = order["get_cart_items"]
         products = Product.objects.all()
-        context = {"products": products, "cartItems": cartItems}
+        context = {"products": products, "cartItems": cartItems, "meta":{"title": "My Store", "description": "Welcome to Our Store, What do you want to buy?"}}
         return render(
             request,
             os.path.join(settings.BASE_DIR, "templates/store/store.html"),
@@ -234,7 +235,7 @@ class CustomerCreateView(CreateView):
 class CustomerDeleteView(DeleteView):
     model = Customer
     template_name = os.path.join(
-        settings.BASE_DIR, "templates/store/customer_delete.html"
+      settings.BASE_DIR, "templates/store/customer_confirm_delete.html"
     )
     success_url = "/"
 
@@ -281,7 +282,6 @@ class CustomerUpdateView(UpdateView):
         return f"/customer_/{customer_name}/delete"
 
 
-@csrf_exempt
 class CustomerView(CreateView, ListView, UpdateView):
     model = Customer
     fields = ["name", "email"]
@@ -292,80 +292,129 @@ class CustomerView(CreateView, ListView, UpdateView):
         return f"customer_/{customer_name}"
 
 
-class CheckView(ListView):
+class CheckView(DetailView, UpdateView):
     model = Customer
-    fields = ["name", "email"]
-
-    def get(self, request, *args, **kwargs):
-        self.template_name = self.get_template_names()
-        self.success_url = self.get_success_url()
-        return super().get(request, *args, **kwargs)
-
-    def get_context_object_name(self, obj):
-        obj = "customers"
-        return obj
-
-    def get_template_names(self):
-        # if not self.object:
-        #     return [
-        #         os.path.join(settings.BASE_DIR, "templates/store/customer_create.html")
-        #     ]
-        # else:
-        return [os.path.join(settings.BASE_DIR, "templates/store/customer_list.html")]
-
-    def get_form_valid(self, form):
-        form.instance.created_by = self.request.user
-        return super().form_valid(form)
+    form_class = CustomerForm
+    template_name = 'templates/store/customer_confirm_delete.html'
+    def get_object(self, query_set=None):
+        pk = self.kwargs['pk']
+        return Customer.objects.get(pk=pk)
 
     def get_success_url(self):
-        try:
-            customer_id = self.object.pk
-            # return f"checkc_/{customer_id}/update"
-            return reverse("update_customer", kwargs={"pk": customer_id})
-        except Exception as e:
-            template = loader.get_template(
-                os.path.join(settings.BASE_DIR, "templates/store/invalid_action.html")
-            )
-            return HttpResponse(template.render({}, self.request))
+        pk = self.kwargs['pk']
+        return reverse('customer_delete', kwargs = {'pk': pk})
 
-    ####
 
-    def post(self, request, *args, **kwargs):
-        self.template_name = self.get_template_names()
-        self.success_url = self.post_success_url()
-        return super().post(request, *args, **kwargs)
 
-    def post_template_names(self):
-        return [os.path.join(settings.BASE_DIR, "templates/store/update_customer.html")]
 
-    def post_object(self, queryset=None):
-        name = self.kwargs["name"]
-        try:
-            obj = Customer.objects.get(
-                name=name, user=authenticate(username="haider", password="xaidi110786")
-            )
-            return obj
-        except Customer.DoesNotExist:
-            return render(
-                self.request,
-                os.path.join(settings.BASE_DIR, "templates/store/invalid_action.html"),
-                {"status_code": 400},
-            )
 
+
+         # pk = self.object.pk
+         # return reverse('customer_delete', kwargs={'pk': pk})
+
+    # def post(self , request , *args , **kwargs) :
+    #     pk = self.kwargs[ 'pk' ]
+    #     if request.method == 'POST' :
+    #         if 'delete' in self.request.META[ 'PATH_INFO' ] :
+    #             return reverse('customer_delete' , kwargs = {'pk' : pk})
+    #         else :
+    #             return self.get_success_url()
+    # # def post(self , request , *args , **kwargs) :
+    #     pk = self.object.pk
+    #     if request.method == 'POST' :
+    #         if 'delete' in request.POST :
+    #             return self.delete(request , *args , **kwargs)
+    #         else :
+    #             return reverse('customer_delete', kwargs = {'pk':pk})
+    #     else :
+    #         return self.get(request , *args , **kwargs)
+
+        #return '/update'
+
+        # if pk is not None :
+        #     return Customer.objects.get(pk = pk)
+        # else :
+        #     slug = kwargs.get("slug")
+        #     return Customer.objects.get(slug = slug)
+
+        # if pk is not None :
+        #     return Customer.objects.get(pk = pk)
+        # # else :
+        # #     slug = kwargs.get("slug")
+        # #     return Customer.objects.get(slug = slug)
+
+
+
+    # def get(self, request, *args, **kwargs):
+    #     self.template_name = self.get_template_names()
+    #     self.success_url = self.get_success_url()
+    #     return super().get(request, *args, **kwargs)
     #
-    def post_form_valid(self, form):
-        try:
-            form.save()
-        except Exception as e:
-            return HttpResponseBadRequest("An error occurred")
-
-        return super().form_valid(form)
-
+    # def get_context_object_name(self, obj):
+    #     obj = "customers"
+    #     return obj
     #
-    def post_success_url(self):
-        # customer_id = self.object.pk
-        # return f"{customer_id}/update"
-        return "/"
+    # def get_template_names(self):
+    #     # if not self.object:
+    #     #     return [
+    #     #         os.path.join(settings.BASE_DIR, "templates/store/customer_create.html")
+    #     #     ]
+    #     # else:
+    #     return [os.path.join(settings.BASE_DIR, "templates/store/customer_list.html")]
+    #
+    # def get_form_valid(self, form):
+    #     form.instance.created_by = self.request.user
+    #     return super().form_valid(form)
+    #
+    # def get_success_url(self):
+    #     try:
+    #         customer_id = self.object.pk
+    #         # return f"checkc_/{customer_id}/update"
+    #         return reverse("checkcustomer_update", kwargs={"pk": customer_id})
+    #     except Exception as e:
+    #         template = loader.get_template(
+    #             os.path.join(settings.BASE_DIR, "templates/store/invalid_action.html")
+    #         )
+    #         return HttpResponse(template.render({}, self.request))
+    #
+    # ####
+    #
+    # def post(self, request, *args, **kwargs):
+    #     self.template_name = self.get_template_names()
+    #     self.success_url = self.post_success_url()
+    #     return super().post(request, *args, **kwargs)
+    #
+    # def post_template_names(self):
+    #     return [os.path.join(settings.BASE_DIR, "templates/store/update_customer.html")]
+    #
+    # def post_object(self, queryset=None):
+    #     name = self.kwargs["name"]
+    #     try:
+    #         obj = Customer.objects.get(
+    #             name=name, user=authenticate(username="haider", password="xaidi110786")
+    #         )
+    #         return obj
+    #     except Customer.DoesNotExist:
+    #         return render(
+    #             self.request,
+    #             os.path.join(settings.BASE_DIR, "templates/store/invalid_action.html"),
+    #             {"status_code": 400},
+    #         )
+    #
+    # #
+    # def post_form_valid(self, form):
+    #     try:
+    #         form.save()
+    #     except Exception as e:
+    #         return HttpResponseBadRequest("An error occurred")
+    #
+    #     return super().form_valid(form)
+    #
+    # #
+    # def post_success_url(self):
+    #     # customer_id = self.object.pk
+    #     # return f"{customer_id}/update"
+    #     return "/"
 
 
 class ProductCreateView(CreateView):
@@ -381,11 +430,31 @@ class ProductCreateView(CreateView):
         return super().form_valid(form)
 
 
+def change_timezone(product):
+    product.created_at = product.created_at + timedelta(hours = 0)
+
+def test_timezone(product):
+    return product.created_at + timedelta(hours = 2)
+def product_list(request):
+    products = Product.objects.all()
+    for product in products:
+        change_timezone(product)
+    return render(request, 'store/product_list.html', {'products': products})
+
 class ProductListView(GenericViewError, ListView):
     model = Product
     template_name = os.path.join(settings.BASE_DIR, "templates/store/product_list.html")
     context_object_name = "products"
 
+    def get_queryset(self):
+        products = super().get_queryset()
+        for product in products:
+            change_timezone(product)
+        return products
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["five_hours_from_now"] = datetime.now() + timedelta(hours = 5)
+        return context
 
 class CustomerListView(ListView):
     model = Customer
@@ -502,3 +571,18 @@ class OrderDayArchiveView(YearArchiveView):
     template_name = os.path.join(
         settings.BASE_DIR, "templates/store/orderday_archive.html"
     )
+
+
+def order_delete(request, id):
+    order = Order.objects.get(id=id)
+    if request.method == 'POST' :
+        order.delete()
+        return redirect('admin')
+    return render(request, os.path.join(settings.BASE_DIR, "templates/store/order_delete_admin.html"),{'order':order})
+
+def store_order_change(request, pk):
+    order = Order.objects.get(pk=pk)
+    if request.method == 'POST':
+        order.delete()
+    else:
+        return render(request, os.path.join(settings.BASE_DIR, "templates/store/order_delete_admin.html"),{'order':order})

@@ -8,5 +8,6 @@
     {% csrf_token %}
     {{ form.as_p }}
     <button type="submit">Update</button>
+  <button> <a {% url 'customer_delete' customer.pk %}>Delete</a></button>
   </form>
 {% endblock %}

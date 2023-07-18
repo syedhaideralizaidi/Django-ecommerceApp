@@ -97,6 +97,8 @@ class OrderAdmin(TimestampedModelAdmin):
 
     actions = ["mark_as_complete"]
 
+    delete_selected_confirmation_template = "templates/store/order_delete_admin.html"
+
     def mark_as_complete(self, request, queryset):
         queryset.update(complete=True)
 
@@ -122,9 +124,12 @@ class CustomerOrderHistoryAdmin(TimestampedModelAdmin):
     exclude = ("created_by", "created_at")
 
 
-@admin.register(ProxyCustomer)
-class ProxyCustomerAdmin(TimestampedModelAdmin):
-    list_display = (
-        "name",
-        "email",
-    )
+# @admin.register(ProxyCustomer)
+# class ProxyCustomerAdmin(TimestampedModelAdmin):
+#     list_display = (
+#         "name",
+#         "email",
+#     )
+
+
+

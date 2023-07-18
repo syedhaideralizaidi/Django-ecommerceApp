@@ -1,5 +1,8 @@
+from uuid import uuid4
+
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.utils.text import slugify
 
 from .managers import *
 
@@ -15,7 +18,7 @@ class TimestampModel(models.Model):
         null=True,
         blank=True,
         related_name="%(class)s_created_by",
-        default=1,
+        default = 1,
     )
 
     class Meta:
@@ -35,16 +38,27 @@ class Customer(TimestampModel):
     orders = models.ManyToManyField(
         "Order", through="CustomerOrderHistory", related_name="orders_in_customer"
     )
+    slug = models.SlugField(max_length = 255,  default = "")
+    def generate_slug(self) :
+        """Generates a unique slug for a customer."""
+        slug = uuid4().hex[ :20 ]
+        while Customer.objects.filter(slug = slug).exists() :
+            slug = uuid4().hex[ :20 ]
+        return slug
+    #
+    #
+    def save(self , *args , **kwargs) :
+        if not self.slug :
+            self.slug = slugify(self.name)
+        super().save(*args , **kwargs)
 
     def get_customer_order_first_timehistory(self):
-        current_customer = Customer.objects.filter(self).first()
-        orders_customer_list = list(current_customer.orders.all())
+        orders_customer_list = list(self.orders.all())
         history_order_list = []
         for each_order in orders_customer_list:
             history_order_list.append(each_order.order_in_customer_order_history.get().customer_order_created_at)
 
         return history_order_list
-        #return orders_customer_list.order_in_customer_order_history.get().customer_order_created_at
     def __str__(self):
         return self.name
 
@@ -180,3 +194,4 @@ class CustomerOrderHistory(TimestampModel):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name = "order_in_customer_order_history")
 
     customer_order_created_at = models.DateTimeField(auto_now_add=True)
+

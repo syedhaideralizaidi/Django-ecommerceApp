@@ -1,0 +1,50 @@
+{% extends 'main.html' %}
+
+
+{% block content %}
+<hr>
+        <h1>Customers List</h1>
+    <hr>
+    <ol id='display'>
+    {% for customer in customers %}
+      <li>{{ customer.name }} - {{ customer.email }}
+      <button><a href="{{ customer.get_absolute_url }}">Edit</a></button>
+      </li>
+    {% empty %}
+      <li>No orders available.</li>
+    {% endfor %}
+  </ol>
+
+        <a href="{% url 'fvhome' %}" role="button" class="btn btn-secondary w-100">Cancel</a>
+
+
+
+
+{% endblock %}
+
+
+
+{% block extra_js %}
+<script type='text/javascript'>
+    $(document).ready(function (){
+        setInterval(function (){
+       $.ajax({
+           type : 'GET',
+           url : "{% url 'get_customers' %}",
+           success: function (response){
+               console.log(response);
+               $("#display").empty();
+                for (var i = 0; i < response.customers.length; i++) {
+                    var customer = response.customers[i];
+                        var temp = "<li>" + customer.name + " - " + customer.email + "</li>";
+                        $("#display").append(temp);
+}
+           },
+           error : function (response){
+               console.log(response)
+           }
+       });
+            },1000);
+    });
+</script>
+{% endblock extra_js %}

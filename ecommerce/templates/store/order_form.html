@@ -1,0 +1,15 @@
+{% extends 'main.html' %}
+
+{% block content %}
+    <hr>
+<h1>Create Order</h1>
+    <hr>
+
+<form action="{% url 'order_create' %}" method="post">
+{% csrf_token %}
+
+{{ form.as_p }}
+
+<input type="submit" value="Create Order">
+</form>
+{% endblock %}

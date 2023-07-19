@@ -1,0 +1,26 @@
+{% extends "main.html" %}
+{% block content %}
+<hr>
+    <h1>Customer Details</h1>
+    <hr>
+  <h1>{{ customer.name }}</h1>
+  <p>Price: {{ customer.email }}</p>
+  <p>Created_at: {{ customer.created_at }}</p>
+<hr>
+        <h3>Customer Order Details</h3>
+<hr>
+    <hr>
+    <div class="d-flex d-flex-inline"><span class="pe-2">Customer's name:</span> <h5>{{ customer.name|title }}</h5></div>
+    <hr>
+    {% for order in customer.orders.all %}
+        <div class="small">Order id: {{ order.pk }}</div>
+        <div>Status: {{ order.complete }}</div>
+        <hr>
+        {% endfor %}
+ <p>
+        <a href="{% url 'customer_order_update' pk=customer.pk %}" role="button" class="btn btn-primary w-100 mb-2">Edit Customer Order</a>
+        <a href="{% url 'fvhome_customerlist' %}" role="button" class="btn btn-secondary w-100">All Collection</a>
+    </p>
+
+{% endblock %}
+i

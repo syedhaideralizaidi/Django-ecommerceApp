@@ -15,7 +15,6 @@ from django.http import (
 )
 from django.shortcuts import render , redirect , get_object_or_404
 from django.template import loader
-from django.urls import reverse
 from django.views import View
 from django.views.generic import (
     CreateView ,
@@ -31,13 +30,8 @@ from django.views.generic import (
     GenericViewError ,
 )
 
+from .forms import CustomerForm , OrderCreateForm , OrderEditForm , OrderDeleteForm
 from .models import *
-
-
-class CustomerForm(ModelForm):
-    class Meta:
-        model = Customer
-        fields = ["name", "email"]
 
 
 # Function Based Views
@@ -212,11 +206,11 @@ class CheckoutView(View):
 
 class CustomerCreateView(CreateView):
     model = Customer
-    fields = ["name", "email", "gender"]
     template_name = os.path.join(
         settings.BASE_DIR, "templates/store/customer_create.html"
     )
 
+    form_class = CustomerForm
     def form_valid(self, form):
         form.instance.created_by = self.request.user
         return super().form_valid(form)
@@ -231,6 +225,16 @@ class CustomerCreateView(CreateView):
             )
             return HttpResponse(template.render({}, self.request))
 
+    # def get_context_data(self , **kwargs) :
+    #     context = super().get_context_data(**kwargs)
+    #     context[ "orders_formset" ] = self.form_class.orders_formset(instance = self.object)
+    #     return context
+
+    def get_formset(self) :
+        formset = super().get_formset()
+        formset.fields[ "orders" ].queryset = self.request.user.orders.all()
+        return formset
+
 
 class CustomerDeleteView(DeleteView):
     model = Customer
@@ -241,9 +245,9 @@ class CustomerDeleteView(DeleteView):
 
     def get_object(self, queryset=None):
         try:
-            name = self.kwargs["name"]
-            print(name)
-            return Customer.objects.get(name=name)
+            pk = self.kwargs["pk"]
+            print(pk)
+            return Customer.objects.get(pk=pk)
         except Exception as e:
             template = loader.get_template(
                 os.path.join(settings.BASE_DIR, "templates/store/invalid_action.html")
@@ -305,121 +309,9 @@ class CheckView(DetailView, UpdateView):
         return reverse('customer_delete', kwargs = {'pk': pk})
 
 
-
-
-
-
-         # pk = self.object.pk
-         # return reverse('customer_delete', kwargs={'pk': pk})
-
-    # def post(self , request , *args , **kwargs) :
-    #     pk = self.kwargs[ 'pk' ]
-    #     if request.method == 'POST' :
-    #         if 'delete' in self.request.META[ 'PATH_INFO' ] :
-    #             return reverse('customer_delete' , kwargs = {'pk' : pk})
-    #         else :
-    #             return self.get_success_url()
-    # # def post(self , request , *args , **kwargs) :
-    #     pk = self.object.pk
-    #     if request.method == 'POST' :
-    #         if 'delete' in request.POST :
-    #             return self.delete(request , *args , **kwargs)
-    #         else :
-    #             return reverse('customer_delete', kwargs = {'pk':pk})
-    #     else :
-    #         return self.get(request , *args , **kwargs)
-
-        #return '/update'
-
-        # if pk is not None :
-        #     return Customer.objects.get(pk = pk)
-        # else :
-        #     slug = kwargs.get("slug")
-        #     return Customer.objects.get(slug = slug)
-
-        # if pk is not None :
-        #     return Customer.objects.get(pk = pk)
-        # # else :
-        # #     slug = kwargs.get("slug")
-        # #     return Customer.objects.get(slug = slug)
-
-
-
-    # def get(self, request, *args, **kwargs):
-    #     self.template_name = self.get_template_names()
-    #     self.success_url = self.get_success_url()
-    #     return super().get(request, *args, **kwargs)
-    #
-    # def get_context_object_name(self, obj):
-    #     obj = "customers"
-    #     return obj
-    #
-    # def get_template_names(self):
-    #     # if not self.object:
-    #     #     return [
-    #     #         os.path.join(settings.BASE_DIR, "templates/store/customer_create.html")
-    #     #     ]
-    #     # else:
-    #     return [os.path.join(settings.BASE_DIR, "templates/store/customer_list.html")]
-    #
-    # def get_form_valid(self, form):
-    #     form.instance.created_by = self.request.user
-    #     return super().form_valid(form)
-    #
-    # def get_success_url(self):
-    #     try:
-    #         customer_id = self.object.pk
-    #         # return f"checkc_/{customer_id}/update"
-    #         return reverse("checkcustomer_update", kwargs={"pk": customer_id})
-    #     except Exception as e:
-    #         template = loader.get_template(
-    #             os.path.join(settings.BASE_DIR, "templates/store/invalid_action.html")
-    #         )
-    #         return HttpResponse(template.render({}, self.request))
-    #
-    # ####
-    #
-    # def post(self, request, *args, **kwargs):
-    #     self.template_name = self.get_template_names()
-    #     self.success_url = self.post_success_url()
-    #     return super().post(request, *args, **kwargs)
-    #
-    # def post_template_names(self):
-    #     return [os.path.join(settings.BASE_DIR, "templates/store/update_customer.html")]
-    #
-    # def post_object(self, queryset=None):
-    #     name = self.kwargs["name"]
-    #     try:
-    #         obj = Customer.objects.get(
-    #             name=name, user=authenticate(username="haider", password="xaidi110786")
-    #         )
-    #         return obj
-    #     except Customer.DoesNotExist:
-    #         return render(
-    #             self.request,
-    #             os.path.join(settings.BASE_DIR, "templates/store/invalid_action.html"),
-    #             {"status_code": 400},
-    #         )
-    #
-    # #
-    # def post_form_valid(self, form):
-    #     try:
-    #         form.save()
-    #     except Exception as e:
-    #         return HttpResponseBadRequest("An error occurred")
-    #
-    #     return super().form_valid(form)
-    #
-    # #
-    # def post_success_url(self):
-    #     # customer_id = self.object.pk
-    #     # return f"{customer_id}/update"
-    #     return "/"
-
-
 class ProductCreateView(CreateView):
     model = Product
-    fields = ["name", "price", "digital"]
+    fields = ["name", "price", "digital","image"]
     template_name = os.path.join(
         settings.BASE_DIR, "templates/store/product_create.html"
     )
@@ -573,16 +465,41 @@ class OrderDayArchiveView(YearArchiveView):
     )
 
 
-def order_delete(request, id):
-    order = Order.objects.get(id=id)
-    if request.method == 'POST' :
-        order.delete()
-        return redirect('admin')
-    return render(request, os.path.join(settings.BASE_DIR, "templates/store/order_delete_admin.html"),{'order':order})
+class OrderCreateView(CreateView):
+    template_name = 'templates/store/order_form.html'
+    form_class = OrderCreateForm
+    model = Order
+    def get_success_url(self):
+        order = self.object
+        return f'order/{order.pk}/update'
 
-def store_order_change(request, pk):
-    order = Order.objects.get(pk=pk)
-    if request.method == 'POST':
-        order.delete()
-    else:
-        return render(request, os.path.join(settings.BASE_DIR, "templates/store/order_delete_admin.html"),{'order':order})
+    def form_valid(self , form) :
+        form.save()
+        return super().form_valid(form)
+
+
+class OrderUpdateView(UpdateView):
+    template_name = 'templates/store/order_update.html'
+    form_class = OrderEditForm
+    model = Order
+
+    def get_success_url(self):
+        order = self.object
+        return f'/order/{order.pk}/delete'
+
+
+class OrderDeleteView(DeleteView):
+    model = Order
+    form_class = OrderDeleteForm
+    template_name = 'templates/store/order_delete.html'
+    success_url = '/order'
+
+    def get_object(self , queryset = None) :
+        order_id = self.kwargs[ "pk" ]
+        try :
+            return Order.objects.get(pk = order_id)
+        except Order.DoesNotExist :
+            return render(
+                self.request ,
+                "templates/store/invalid_action.html" ,
+                {"status_code" : 400} ,)

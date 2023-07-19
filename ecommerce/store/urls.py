@@ -1,6 +1,7 @@
-from django.urls import path , re_path
+from django.urls import path
 
 from . import views
+from .formsetViews import *
 
 urlpatterns = [
     path("login/", views.login_user, name="login"),
@@ -48,6 +49,11 @@ urlpatterns = [
     #     views.CustomerDeleteView.as_view(),
     #     name="customer_delete",
     # ),
+    path(
+        "customer_/<int:pk>/delete",
+        views.CustomerDeleteView.as_view(),
+        name="customer_delete",
+    ),
     path("checkc_/create", views.CheckView.as_view(), name="create_customer"),
     path(
         "checkc_",
@@ -67,10 +73,30 @@ urlpatterns = [
     path(
         "checkc_/<int:pk>/delete" ,
         views.CheckView.as_view(template_name='templates/store/customer_confirm_delete.html') ,
-        name = "customer_delete" ,
-    ) ,
-    # path(r'admin/store/order/<int:object_id>/change' , admin.site.admin_view(OrderAdmin.change_view)) ,
-    re_path(r'^admin/store/order/(?P<object_id>\d+)/change/$', views.store_order_change, name='store_order_change')
+        name = "customer_delete1" ,
+    ),
+    path("order", views.OrderCreateView.as_view(), name = 'order_create'),
+    path("order/<int:pk>/update", views.OrderUpdateView.as_view(template_name= 'templates/store/order_update.html'), name = 'update_order'),
+    path("order/<int:pk>/delete", views.OrderDeleteView.as_view(template_name= 'templates/store/order_delete.html'), name = 'delete_order'),
+
+
+
+
+
+
+
+    path("fvhome",HomeView.as_view(), name="fvhome"),
+    path("fvhome/orders", CustomersViewList.as_view(), name = 'fvhome_customerlist'),
+    path("fvhome/add", CustomersAddView.as_view(), name = 'add_customer'),
+    path("fvhome/<int:pk>/", CustomerDetailView.as_view(), name = 'detail_customer'),
+    path("fvhome/<int:pk>/orders/edit/", CustomerOrderUpdateView.as_view(), name = 'customer_order_update'),
+
+
+    path("createcustomersajax", create_customer_ajax, name='create_customers_ajax'),
+    path('validate',validate,name="validate"),
+    path('get_customers', get_customers, name='get_customers'),
+
+
 
 
 ]

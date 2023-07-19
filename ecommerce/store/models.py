@@ -1,12 +1,16 @@
 from uuid import uuid4
 
 from django.contrib.auth.models import User
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.text import slugify
 
 from .managers import *
 
 users = User.objects.all()
+class GenerateProfileImagePath(object):
+    def __init__(self):
+        pass
 
 
 class TimestampModel(models.Model):
@@ -59,6 +63,10 @@ class Customer(TimestampModel):
             history_order_list.append(each_order.order_in_customer_order_history.get().customer_order_created_at)
 
         return history_order_list
+
+    def get_absolute_url(self):
+        return reverse('detail_customer', kwargs= {'pk':self.pk})
+
     def __str__(self):
         return self.name
 
@@ -79,7 +87,7 @@ class Product(TimestampModel):
     name = models.CharField(max_length=200, null=True)
     price = models.FloatField()
     digital = models.BooleanField(default=False, null=True, blank=False)
-    image = models.ImageField(null=True, blank=True)
+    image = models.ImageField(upload_to = '',null=True, blank=True)
 
     objects = models.Manager()
     products = ProductManager()
@@ -134,6 +142,9 @@ class Order(TimestampModel):
         self.request = kwargs.get("request", None)
         if self.request:
             self.created_by = self.request.user
+
+    # def get_absolute_url(self):
+    #     return reverse('order_detail', kwargs= {'pk':self.pk})
 
     @property
     def get_cart_total(self):

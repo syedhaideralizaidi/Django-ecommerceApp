@@ -1,0 +1,27 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<hr>
+    <h1>Create Customer</h1>
+    <hr>
+{#<form method="post" action="{% url 'add_customer' %}">#}
+{#  {% csrf_token %}#}
+{#  {{ form.as_p }}#}
+{#  <button type="submit">Create</button>#}
+{#</form>#}
+
+    <form method="post" action="{% url 'add_customer' %}">
+  {% csrf_token %}
+  {{ form.as_p }}
+<hr>
+  <h3>Customer Order</h3>
+        <hr>
+  <div>
+    {{ order_form.as_p }}
+  </div>
+
+  <input type="submit" value="Save">
+</form>
+
+
+{% endblock content %}

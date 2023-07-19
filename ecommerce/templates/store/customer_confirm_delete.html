@@ -3,7 +3,7 @@
 {% block content %}
     <h1>Confirm Delete</h1>
 
-    <form method="POST">
+    <form method="POST" action="{% url 'customer_delete' customer.pk %}" >
         {% csrf_token %}
         <input type="submit" value="Delete">
     </form>

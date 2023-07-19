@@ -1,0 +1,16 @@
+{% extends 'main.html' %}
+
+{% block content %}
+    <hr>
+<h1>Delete Order</h1>
+<hr>
+<form action="{% url 'delete_order' order.pk %}" method="post">
+    {% csrf_token %}
+
+    <p>Are you sure you want to delete this order?</p>
+
+    <input type="submit" value="Delete Order">
+</form>
+    <hr>
+    <button><a href="{% url 'store' %}">No, Go to Main Page</a></button>
+{% endblock %}

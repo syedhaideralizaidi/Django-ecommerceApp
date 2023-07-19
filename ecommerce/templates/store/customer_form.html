@@ -4,7 +4,7 @@
 <hr>
   <h1>Update Customer</h1>
 
-  <form method="put">
+  <form method="post">
     {% csrf_token %}
     {{ form.as_p }}
     <button type="submit">Update</button>

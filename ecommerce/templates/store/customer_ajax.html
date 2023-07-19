@@ -1,0 +1,46 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<div class="col-lg-4">
+<form method="POST">
+    {% csrf_token %}
+    <input type="text" name="name" placeholder="Name" id="name">
+    <input type="email" name="email" placeholder="Email">
+    <select name="gender">
+        <option value="MALE">Male</option>
+        <option value="FEMALE">Female</option>
+    </select>
+    <input type="submit" value="Submit" class="btn btn-primary">
+</form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script type='text/javascript'>
+$(document).ready(function () {
+  $("#name").change(function () {
+    var name = $(this).val();
+    $.ajaxSetup({
+      headers: {
+        "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value,
+      }
+    });
+    $.ajax({
+      url: 'validate',
+      method: 'POST',
+      data: {
+        'name': name,
+        'csrfmiddlewaretoken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+      },
+      dataType: 'json',
+      success: function (data) {
+        console.log("Name already Taken, Try another one");
+        if (data.taken) {
+          alert("Name already Taken, Try another one");
+        }
+      }
+    });
+  });
+});
+</script>
+{% endblock extra_js %}

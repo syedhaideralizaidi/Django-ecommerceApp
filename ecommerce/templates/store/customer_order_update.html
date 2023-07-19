@@ -1,0 +1,17 @@
+{% extends 'main.html' %}
+
+{% block content %}
+    <hr>
+  <h1>Customer Order Update</h1>
+    <hr>
+<form method="post" action="{% url 'customer_order_update' customer.pk %}">
+    {% csrf_token %}
+    {{ form.as_p }}
+    {{ form.management_form }}
+{#    {% for formset in form %}#}
+{#        {{ formset.as_p }}#}
+{#    {% endfor %}#}
+    <button type="submit">Save changes</button>
+</form>
+
+{% endblock %}

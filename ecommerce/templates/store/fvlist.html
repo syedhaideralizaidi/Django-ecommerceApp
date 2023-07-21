@@ -1,21 +1,23 @@
 {% extends 'main.html' %}
-
+{%  load i18n %}
 
 {% block content %}
 <hr>
-        <h1>Customers List</h1>
+        <h1>{% translate "Customer List" %}</h1>
     <hr>
     <ol id='display'>
     {% for customer in customers %}
       <li>{{ customer.name }} - {{ customer.email }}
-      <button><a href="{{ customer.get_absolute_url }}">Edit</a></button>
+{#      <button><a href="{{ customer.get_absolute_url }}">Edit</a></button>#}
       </li>
     {% empty %}
       <li>No orders available.</li>
     {% endfor %}
   </ol>
 
-        <a href="{% url 'fvhome' %}" role="button" class="btn btn-secondary w-100">Cancel</a>
+        <a href="{% url 'fvhome' %}" role="button" class="btn btn-secondary w-100">{% translate "Cancel" %}</a>
+    <hr>
+    <button id="refresh-customers">{% translate "Refresh Customers" %}</button>
 
 
 
@@ -27,7 +29,7 @@
 {% block extra_js %}
 <script type='text/javascript'>
     $(document).ready(function (){
-        setInterval(function (){
+        $('#refresh-customers').click(function(){
        $.ajax({
            type : 'GET',
            url : "{% url 'get_customers' %}",
@@ -44,7 +46,7 @@
                console.log(response)
            }
        });
-            },1000);
+        });
     });
 </script>
 {% endblock extra_js %}

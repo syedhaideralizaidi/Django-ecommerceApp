@@ -130,6 +130,3 @@ class CustomerOrderHistoryAdmin(TimestampedModelAdmin):
 #         "name",
 #         "email",
 #     )
-
-
-

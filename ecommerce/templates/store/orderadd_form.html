@@ -1,0 +1,50 @@
+
+{% extends 'main.html' %}
+
+{% block content %}
+
+<hr>
+    <h1>Add a Customer</h1>
+<hr>
+    <form id="order-form" method="POST">
+        {% csrf_token %}
+        {{ customer_form.as_p }}
+    <hr>
+    <h3>Orders</h3>
+        {{ order_formset.management_form }}
+        {% for form in order_formset %}
+        <div class="order-form">
+        <hr>
+            {{ form.as_p }}
+
+        </div>
+        {% endfor %}
+        <button id="add-form" type="button">Add Another Order</button>
+        <button type="submit">Create Order</button>
+    </form>
+{% endblock %}
+
+{% block end_script %}
+<script>
+    let orderForm = document.querySelectorAll(".order-form")
+    let container = document.querySelector("#order-form")
+    let addButton = document.querySelector("#add-form")
+    let totalForms = document.querySelector("#id_form-TOTAL_FORMS")
+
+    let formNum = orderForm.length-1
+    addButton.addEventListener('click', addForm)
+
+    function addForm(e){
+        e.preventDefault()
+
+        let newForm = orderForm[0].cloneNode(true)
+        let formRegex = RegExp(`form-(\\d){1}-`,'g')
+
+        formNum++
+        newForm.innerHTML = newForm.innerHTML.replace(formRegex, `form-${formNum}-`)
+        container.insertBefore(newForm, addButton)
+
+        totalForms.setAttribute('value', `${formNum+1}`)
+    }
+</script>
+{% endblock end_script %}

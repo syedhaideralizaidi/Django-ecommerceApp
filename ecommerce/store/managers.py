@@ -3,7 +3,7 @@ from django.db import models
 
 class ProductManager(models.Manager):
     def get_queryset(self):
-        return super().get_queryset().order_by("price")
+        return super().get_queryset().filter(digital = True)
 
 
 class OrderManager(models.Manager):

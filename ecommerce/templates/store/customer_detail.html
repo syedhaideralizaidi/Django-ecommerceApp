@@ -1,12 +1,14 @@
 {% extends "main.html" %}
+{% load i18n %}
 {% block content %}
+
 <hr>
-    <h1>Details View</h1>
+    <h1>{% translate "Details View" %}</h1>
     <hr>
   <h1>{{ customer.name }}</h1>
   <p>Price: {{ customer.email }}</p>
   <p>Created_at: {{ customer.created_at }}</p>
-        <button formmethod="post"><a href="{%   url 'update_customer' customer.pk %}">Update</a></button>
+        <button formmethod="post"><a href="{%   url 'update_customer' customer.pk %}">{% translate "Update" %}</a></button>
 
 {#  <button> <a href="{% url 'product_update' product.name %}">Update Product</a></button>#}
 {% endblock %}

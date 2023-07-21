@@ -2,14 +2,20 @@
 
 {% block content %}
 <div class="col-lg-4">
-<form method="POST">
+<hr>
+<h1>Create Customer</h1>
+<hr>
+    <form method="POST">
     {% csrf_token %}
     <input type="text" name="name" placeholder="Name" id="name">
+        <hr>
     <input type="email" name="email" placeholder="Email">
+        <hr>
     <select name="gender">
         <option value="MALE">Male</option>
         <option value="FEMALE">Female</option>
     </select>
+        <hr>
     <input type="submit" value="Submit" class="btn btn-primary">
 </form>
 </div>

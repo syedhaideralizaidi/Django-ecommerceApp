@@ -1,0 +1,16 @@
+{% extends 'main.html' %}
+{% load i18n %}
+
+{% block content %}
+<hr>
+    <h1>{% translate "Create Customer" %}</h1>
+    <hr>
+<form method="post" action="{% url 'add_customer' %}">
+  {% csrf_token %}
+  {{ form.as_p }}
+<hr>
+  <h3>{% translate "Orders" %}</h3>
+ <hr>
+<a href="{% url "addorder" %}">{% translate "Add Order" %}</a>
+</form>
+{% endblock %}

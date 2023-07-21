@@ -1,20 +1,22 @@
 from uuid import uuid4
-
 from django.contrib.auth.models import User
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.text import slugify
-
 from .managers import *
+from django.db.models.signals import post_delete, post_save, pre_delete, pre_save
+from django.dispatch import receiver
 
 users = User.objects.all()
+
+
 class GenerateProfileImagePath(object):
     def __init__(self):
         pass
 
 
 class TimestampModel(models.Model):
-    created_at = models.DateTimeField(default=timezone.now)
+    created_at = models.DateTimeField()
     updated_at = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(
         User,
@@ -22,11 +24,15 @@ class TimestampModel(models.Model):
         null=True,
         blank=True,
         related_name="%(class)s_created_by",
-        default = 1,
+        default=1,
     )
 
     class Meta:
         abstract = True
+
+    def save(self, *args, **kwargs):
+        self.created_at = timezone.now()
+        super(TimestampModel, self).save(*args, **kwargs)
 
 
 class Customer(TimestampModel):
@@ -42,30 +48,32 @@ class Customer(TimestampModel):
     orders = models.ManyToManyField(
         "Order", through="CustomerOrderHistory", related_name="orders_in_customer"
     )
-    slug = models.SlugField(max_length = 255,  default = "")
-    def generate_slug(self) :
+    slug = models.SlugField(max_length=255, default="")
+
+    def generate_slug(self):
         """Generates a unique slug for a customer."""
-        slug = uuid4().hex[ :20 ]
-        while Customer.objects.filter(slug = slug).exists() :
-            slug = uuid4().hex[ :20 ]
+        slug = uuid4().hex[:20]
+        while Customer.objects.filter(slug=slug).exists():
+            slug = uuid4().hex[:20]
         return slug
-    #
-    #
-    def save(self , *args , **kwargs) :
-        if not self.slug :
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
             self.slug = slugify(self.name)
-        super().save(*args , **kwargs)
+        super().save(*args, **kwargs)
 
     def get_customer_order_first_timehistory(self):
         orders_customer_list = list(self.orders.all())
         history_order_list = []
         for each_order in orders_customer_list:
-            history_order_list.append(each_order.order_in_customer_order_history.get().customer_order_created_at)
+            history_order_list.append(
+                each_order.order_in_customer_order_history.get().customer_order_created_at
+            )
 
         return history_order_list
 
     def get_absolute_url(self):
-        return reverse('detail_customer', kwargs= {'pk':self.pk})
+        return reverse("detail_customer", kwargs={"pk": self.pk})
 
     def __str__(self):
         return self.name
@@ -73,6 +81,9 @@ class Customer(TimestampModel):
     def order_by_many(self):
         # return ",".join([str(o) for o in User.objects.all()])
         return self.user
+
+    class Meta:
+        app_label = "store"
 
 
 class ProxyCustomer(Customer):
@@ -87,13 +98,16 @@ class Product(TimestampModel):
     name = models.CharField(max_length=200, null=True)
     price = models.FloatField()
     digital = models.BooleanField(default=False, null=True, blank=False)
-    image = models.ImageField(upload_to = '',null=True, blank=True)
+    image = models.ImageField(upload_to="", null=True, blank=True)
 
     objects = models.Manager()
     products = ProductManager()
 
     def __str__(self):
         return self.name
+
+    def get_absolute_url(self):
+        return reverse('product_detail', kwargs={"pk": self.pk})
 
     @property
     def imageURL(self):
@@ -181,8 +195,8 @@ class OrderItem(TimestampModel):
         total = self.product.price * self.quantity
         return total
 
-    def __str__(self):
-        return self.quantity
+    # def __str__(self):
+    #     return self.quantity
 
 
 class ShippingAddress(TimestampModel):
@@ -202,7 +216,58 @@ class ShippingAddress(TimestampModel):
 
 class CustomerOrderHistory(TimestampModel):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name = "order_in_customer_order_history")
+    order = models.ForeignKey(
+        Order, on_delete=models.CASCADE, related_name="order_in_customer_order_history"
+    )
 
     customer_order_created_at = models.DateTimeField(auto_now_add=True)
 
+
+@receiver(pre_delete, sender=Order)
+def delete_order_items(sender, instance, **kwargs):
+    order_items = OrderItem.objects.filter(order=instance)
+    order_items.delete()
+    print("Order deleted by signal")
+
+
+@receiver(post_save, sender=Order)
+def add_order_items(sender, instance, **kwargs):
+    order_items = OrderItem.objects.create(order=instance, product=instance.products)
+    order_items.save()
+    print("I'm inside add_order_items")
+
+
+@receiver(pre_save, sender=Product)
+def update_product(sender, instance, **kwargs):
+    order = Order.objects.filter(products=instance)
+    if order:
+        print("Inside order, (pre_save)")
+        order.products = instance
+    print("I am in pre-save signal")
+
+
+@receiver(post_delete, sender=CustomerOrderHistory)
+def delete_order_history(sender, instance, **kwargs):
+    order = Order.objects.get(transaction_id=instance.order.transaction_id)
+    order.delete()
+    print("Order history deleted by signal")
+
+
+from django.contrib.sites.models import Site
+
+class Site(models.Model):
+    domain = models.CharField(max_length=100)
+    verbose_name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.domain
+
+def create_site():
+    site = Site(
+        domain='localhost:8000/feed',
+        verbose_name='store',
+    )
+    site.save()
+
+if __name__ == '__main__':
+    create_site()

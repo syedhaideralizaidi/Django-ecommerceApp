@@ -1,14 +1,38 @@
 {% extends 'main.html' %}
-
+{% load i18n %}
 {% block content %}
 <hr>
-  <h1>Update Product</h1>
+  <h1>{% translate "Update Product" %}</h1>
 
-  <form method="post">
+  <form method="post" id="update-product-form">
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit">Update</button>
+    <button type="submit">{% translate "Update" %}</button>
   </form>
 <hr>
-<button><a href="{{ request.path }}delete">Delete Product</a></button>
+<button><a href="{{ request.path }}delete">{% translate "Delete Product" %}</a></button>
 {% endblock %}
+
+{% block extra_js %}
+    <script>
+    $(document).ready(function() {
+    $("#update-product-form").submit(function(event) {
+      event.preventDefault();
+      var formData = new FormData(this);
+      $.ajax({
+        url: $(this).attr("action"),
+        type: $(this).attr("method"),
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(response) {
+          // Handle success response
+        },
+        error: function(xhr, status, error) {
+          // Handle error response
+        }
+      });
+    });
+  });
+    </script>
+{% endblock extra_js %}

@@ -1,8 +1,8 @@
 {% extends 'main.html' %}
-
+{% load i18n %}
 {% block content %}
 <hr>
-  <h1>Customer List</h1>
+  <h1>{% translate "Customer List" %}</h1>
 
   <ol>
     {% for customer in customers %}
@@ -10,10 +10,10 @@
       <button><a href="{% url 'checkcustomer_update' customer.name %}">Update</a></button>
       </li>
     {% empty %}
-      <li>No customers available.</li>
+      <li>{% translate "No customers available" %}</li>
     {% endfor %}
   </ol>
 
-  <button><a href="{% url 'store' %}">Change the Customer</a></button>
+  <button><a href="{% url 'store' %}">{% translate "Change the Customer" %}</a></button>
 
 {% endblock %}

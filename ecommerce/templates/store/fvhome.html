@@ -1,12 +1,12 @@
 {% extends 'main.html' %}
-
+{% load i18n %}
 {% block content %}
 <hr>
-    <h1>Customer Page</h1>
+    <h1>{% translate "Customer Page" %}</h1>
 
     <hr>
 
-    <a href="{% url 'fvhome_customerlist' %}" role="button" class="btn btn-primary w-100 mb-2">All Customers</a>
-    <a href="{% url 'add_customer' %}" role="button" class="btn btn-secondary w-100">Add an Customer</a>
+    <a href="{% url 'fvhome_customerlist' %}" role="button" class="btn btn-primary w-100 mb-2">{% translate "All Customer" %}</a>
+    <a href="{% url 'add_customer' %}" role="button" class="btn btn-secondary w-100">{% translate "Add an Customer" %}</a>
 
 {% endblock %}

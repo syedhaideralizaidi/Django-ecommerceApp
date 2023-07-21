@@ -1,37 +1,42 @@
 import json
 import os
-from datetime import timedelta , datetime
+from datetime import timedelta, datetime
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import authenticate , logout
+from django.contrib.auth import authenticate, logout
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.forms import ModelForm
 from django.http import (
-    JsonResponse ,
-    HttpResponseBadRequest ,
-    HttpResponse ,
+    JsonResponse,
+    HttpResponseBadRequest,
+    HttpResponse,
 )
-from django.shortcuts import render , redirect , get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404
 from django.template import loader
+from django.urls import reverse
 from django.views import View
 from django.views.generic import (
-    CreateView ,
-    UpdateView ,
-    DeleteView ,
-    ListView ,
-    TemplateView ,
-    RedirectView ,
-    ArchiveIndexView ,
-    YearArchiveView ,
-    DetailView ,
-    FormView ,
-    GenericViewError ,
+    CreateView,
+    UpdateView,
+    DeleteView,
+    ListView,
+    TemplateView,
+    RedirectView,
+    ArchiveIndexView,
+    YearArchiveView,
+    DetailView,
+    FormView,
+    GenericViewError,
 )
 
-from .forms import CustomerForm , OrderCreateForm , OrderEditForm , OrderDeleteForm
-from .models import *
+from .forms import CustomerForm, OrderCreateForm, OrderEditForm, OrderDeleteForm
+
+from django.utils.translation import gettext as _
+from django.utils.translation import get_language, activate, gettext
+
+from store.models import Customer, Product, Order, OrderItem
 
 
 # Function Based Views
@@ -138,9 +143,18 @@ def customer_view(request, customer_name=None):
         customer_delete_view(request, customer_name)
 
 
+def translate(language):
+    cur_language = get_language()
+    try:
+        activate(language)
+        text = gettext("Welcome to Our Store, What do you want to buy?")
+    finally:
+        activate(cur_language)
+    return text
 # Class Based Views
 class StoreView(View):
     def get(self, request):
+        trans = translate(language= 'fr')
         if request.user.is_authenticated:
             customer = request.user.customer
             order, created = Order.objects.get_or_create(
@@ -153,7 +167,12 @@ class StoreView(View):
             order = {"get_cart_total": 0, "get_cart_items": 0, "shipping": False}
             cartItems = order["get_cart_items"]
         products = Product.objects.all()
-        context = {"products": products, "cartItems": cartItems, "meta":{"title": "My Store", "description": "Welcome to Our Store, What do you want to buy?"}}
+        translated_products = [_(product.name) for product in products]
+        obj = {
+            "title": _("My Store"),
+            "description": _("Welcome to Our Store, What do you want to buy?"),
+        }
+        context = {"products": products, "cartItems": cartItems, "meta": obj, "trans":trans}
         return render(
             request,
             os.path.join(settings.BASE_DIR, "templates/store/store.html"),
@@ -211,6 +230,7 @@ class CustomerCreateView(CreateView):
     )
 
     form_class = CustomerForm
+
     def form_valid(self, form):
         form.instance.created_by = self.request.user
         return super().form_valid(form)
@@ -230,16 +250,16 @@ class CustomerCreateView(CreateView):
     #     context[ "orders_formset" ] = self.form_class.orders_formset(instance = self.object)
     #     return context
 
-    def get_formset(self) :
+    def get_formset(self):
         formset = super().get_formset()
-        formset.fields[ "orders" ].queryset = self.request.user.orders.all()
+        formset.fields["orders"].queryset = self.request.user.orders.all()
         return formset
 
 
 class CustomerDeleteView(DeleteView):
     model = Customer
     template_name = os.path.join(
-      settings.BASE_DIR, "templates/store/customer_confirm_delete.html"
+        settings.BASE_DIR, "templates/store/customer_confirm_delete.html"
     )
     success_url = "/"
 
@@ -299,19 +319,20 @@ class CustomerView(CreateView, ListView, UpdateView):
 class CheckView(DetailView, UpdateView):
     model = Customer
     form_class = CustomerForm
-    template_name = 'templates/store/customer_confirm_delete.html'
+    template_name = "templates/store/customer_confirm_delete.html"
+
     def get_object(self, query_set=None):
-        pk = self.kwargs['pk']
+        pk = self.kwargs["pk"]
         return Customer.objects.get(pk=pk)
 
     def get_success_url(self):
-        pk = self.kwargs['pk']
-        return reverse('customer_delete', kwargs = {'pk': pk})
+        pk = self.kwargs["pk"]
+        return reverse("customer_delete", kwargs={"pk": pk})
 
 
 class ProductCreateView(CreateView):
     model = Product
-    fields = ["name", "price", "digital","image"]
+    fields = ["name", "price", "digital"]
     template_name = os.path.join(
         settings.BASE_DIR, "templates/store/product_create.html"
     )
@@ -319,19 +340,24 @@ class ProductCreateView(CreateView):
 
     def form_valid(self, form):
         form.instance.created_by = self.request.user
+        form.instance.image = self.request.FILES.get("image")
         return super().form_valid(form)
 
 
 def change_timezone(product):
-    product.created_at = product.created_at + timedelta(hours = 0)
+    product.created_at = product.created_at + timedelta(hours=0)
+
 
 def test_timezone(product):
-    return product.created_at + timedelta(hours = 2)
+    return product.created_at + timedelta(hours=2)
+
+
 def product_list(request):
     products = Product.objects.all()
     for product in products:
         change_timezone(product)
-    return render(request, 'store/product_list.html', {'products': products})
+    return render(request, "store/product_list.html", {"products": products})
+
 
 class ProductListView(GenericViewError, ListView):
     model = Product
@@ -343,10 +369,12 @@ class ProductListView(GenericViewError, ListView):
         for product in products:
             change_timezone(product)
         return products
+
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["five_hours_from_now"] = datetime.now() + timedelta(hours = 5)
+        context["five_hours_from_now"] = datetime.now() + timedelta(hours=5)
         return context
+
 
 class CustomerListView(ListView):
     model = Customer
@@ -358,7 +386,7 @@ class CustomerListView(ListView):
 
 class ProductUpdateView(UpdateView):
     model = Product
-    fields = ["price"]
+    fields = ["price", "image"]
     template_name = os.path.join(
         settings.BASE_DIR, "templates/store/update_product.html"
     )
@@ -466,40 +494,41 @@ class OrderDayArchiveView(YearArchiveView):
 
 
 class OrderCreateView(CreateView):
-    template_name = 'templates/store/order_form.html'
+    template_name = "templates/store/order_form.html"
     form_class = OrderCreateForm
     model = Order
-    def get_success_url(self):
-        order = self.object
-        return f'order/{order.pk}/update'
+    # def get_success_url(self):
+    #     order = self.object
+    #     return f'order/{order.pk}/update'
 
-    def form_valid(self , form) :
+    def form_valid(self, form):
         form.save()
         return super().form_valid(form)
 
 
 class OrderUpdateView(UpdateView):
-    template_name = 'templates/store/order_update.html'
+    template_name = "templates/store/order_update.html"
     form_class = OrderEditForm
     model = Order
 
     def get_success_url(self):
         order = self.object
-        return f'/order/{order.pk}/delete'
+        return f"/order/{order.pk}/delete"
 
 
 class OrderDeleteView(DeleteView):
     model = Order
     form_class = OrderDeleteForm
-    template_name = 'templates/store/order_delete.html'
-    success_url = '/order'
+    template_name = "templates/store/order_delete.html"
+    success_url = "/order"
 
-    def get_object(self , queryset = None) :
-        order_id = self.kwargs[ "pk" ]
-        try :
-            return Order.objects.get(pk = order_id)
-        except Order.DoesNotExist :
+    def get_object(self, queryset=None):
+        order_id = self.kwargs["pk"]
+        try:
+            return Order.objects.get(pk=order_id)
+        except Order.DoesNotExist:
             return render(
-                self.request ,
-                "templates/store/invalid_action.html" ,
-                {"status_code" : 400} ,)
+                self.request,
+                "templates/store/invalid_action.html",
+                {"status_code": 400},
+            )

@@ -1,13 +1,13 @@
 {% extends 'main.html' %}
-
+{% load i18n %}
 {% block content %}
 <hr>
-  <h1>Update Customer</h1>
+  <h1>{% translate "Update Customer" %}</h1>
 
   <form method="post">
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit">Update</button>
-  <button> <a {% url 'customer_delete' customer.pk %}>Delete</a></button>
+    <button type="submit">{% translate "Update" %}</button>
+  <button> <a {% url 'customer_delete' customer.pk %}>{% translate "Delete" %}</a></button>
   </form>
 {% endblock %}

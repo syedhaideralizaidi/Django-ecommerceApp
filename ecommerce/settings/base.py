@@ -9,7 +9,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 INSTALLED_APPS = [
-    "store",
+    # "store.apps.StoreConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -17,12 +17,16 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "admin_reorder",
+    "django.contrib.sites",
+    "store",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.locale.LocaleMiddleware" ,
     "django.middleware.common.CommonMiddleware",
+
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
@@ -64,7 +68,7 @@ ROOT_URLCONF = "ecommerce.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [os.path.join(BASE_DIR, "templates", "store"),BASE_DIR,"templates"],
+        "DIRS": [os.path.join(BASE_DIR, "templates", "store"), BASE_DIR, "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -99,8 +103,10 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
-LANGUAGE_CODE = "en-us"
+# LOCALE_PATHS = [os.path.join(BASE_DIR, "locale")]
+LOCALE_PATHS = (
+    os.path.join(BASE_DIR, 'locale/'),
+)
 
 TIME_ZONE = "Asia/Karachi"
 
@@ -115,6 +121,16 @@ USE_TZ = True
 WSGI_APPLICATION = "ecommerce.wsgi.application"
 
 STATIC_URL = "/static/"
+
+
+from django.utils.translation import gettext_lazy as _
+
+LANGUAGE_CODE = "en"
+
+LANGUAGES = (
+    ('en',_('English')),
+    ('fr',_('French')),
+)
 
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 MEDIA_URL = "/images/"

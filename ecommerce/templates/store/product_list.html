@@ -1,8 +1,8 @@
 {% extends 'main.html' %}
-
+{% load i18n %}
 {% block content %}
 <hr>
-  <h1>Product List</h1>
+  <h1>{% translate "Product List" %}</h1>
   <ol class="list-group">
     {% for product in products %}
       <li class="list-group-item">{{ product.name }} --- {{ product.price | floatformat:2 }} ---- {{ product.created_at|date:'Y-m-d H:i:s'}} -----------{{ five_hours_from_now }}</li>
@@ -11,5 +11,5 @@
     {% endfor %}
   </ol>
 <hr>
-  <button><a href="{% url 'store' %}">Change the Product</a></button>
+  <button><a href="{% url 'store' %}">{% translate "Change Product" %}</a></button>
 {% endblock %}
